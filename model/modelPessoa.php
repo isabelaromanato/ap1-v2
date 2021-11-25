@@ -28,7 +28,18 @@ class ModelPessoa{
         $this->_celular = $dadosPessoa->celular ?? null;
         $this->_fotografia = $dadosPessoa->fotografia ?? null;
 
+        #não da mais para enviar os arquivos via JSON para upload
+
+        // $this->_nome = $_POST["nome"] ?? null;
+        // $this->_sobrenome =  $_POST["sobrenome"] ?? null;
+        // $this->_email =  $_POST["email"] ?? null;
+        // $this->_celular = $_POST["celular"] ?? null;
+        // $this->_fotografia =  $_FILES["fotografia"]["name"] ?? null;
+
         $this->_conn = $conn;
+
+         //this -> diferenciar atributos do escopo da classe e atributos que servem somente 
+         //na função local
     }
 
     public function findAll(){
@@ -65,19 +76,64 @@ class ModelPessoa{
         $sql = "INSERT INTO tbl_pessoa (nome, sobrenome, email, celular, fotografia)
         VALUES (?,?,?,?,?)";
 
+        $extensao = pathinfo($this->_fotografia, PATHINFO_EXTENSION);
+        $novoNomeArquivo = md5(microtime()) . ".$extensao";
+
+        // echo $novoNomeArquivo;exit;
+
+        move_uploaded_file($_FILES["fotografia"]["tmp_name"], "../upload/$novoNomeArquivo");
+
         $stm = $this->_conn->prepare($sql);
 
         $stm->bindValue(1,$this->_nome);
         $stm->bindValue(2,$this->_sobrenome);
         $stm->bindValue(3,$this->_email);
         $stm->bindValue(4,$this->_celular);
-        $stm->bindValue(5,$this->_fotografia);
+        $stm->bindValue(5,$novoNomeArquivo);
 
         if ($stm->execute()) {
             return "Success";
         } else{
             return "Error";
         }
+    }
+
+    public function delete(){
+
+        $sql = "DELETE FROM tbl_pessoa WHERE cod_pessoa = ?";
+
+        $stmt = $this->_conn->prepare($sql);
+
+        $stmt->bindValue(1, $this->_codPessoa);
+
+        if ($stmt->execute()) {
+            return "Dados excluídos com sucesso!";
+        }
+
+    }
+    public function update(){
+
+        $sql = "UPDATE tbl_pessoa SET 
+        nome = ?,
+        sobrenome = ?,
+        email = ?,
+        celular = ?,
+        fotografia = ?
+        WHERE cod_pessoa = ?";
+
+        $stmt = $this->_conn->prepare($sql);
+
+        $stmt->bindValue(1, $this->_nome);
+        $stmt->bindValue(2, $this->_sobrenome);
+        $stmt->bindValue(3, $this->_email);
+        $stmt->bindValue(4, $this->_celular);
+        $stmt->bindValue(5, $this->_fotografia);
+        $stmt->bindValue(6, $this->_codPessoa);
+
+        if ($stmt->execute()) {
+            return "Dados alterados com sucesso!";
+        }
+
     }
 
 }

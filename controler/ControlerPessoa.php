@@ -17,6 +17,9 @@ class ControllerPessoa
          $dadosPessoa = json_decode($json);
 
          $this->_codPessoa = $dadosPessoa->cod_pessoa ?? null;
+
+         //this -> diferenciar atributos do escopo da classe e atributos que servem somente 
+         //na função local
     }
 
     function router()
@@ -36,11 +39,11 @@ class ControllerPessoa
                 break;
 
             case 'PUT':
-                # code...
+                return $this->_modelPessoa->update();
                 break;
 
             case 'DELETE':
-                # code...
+                return $this->_modelPessoa->delete();
                 break;
 
             default:
